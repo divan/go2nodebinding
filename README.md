@@ -108,6 +108,8 @@ Just feed a Go file, C++ code will be printed to the stdout:
 go2nodebinding example/example.go > binding.cpp
 ```
 
+Probably should be used from withing `go:generate`.
+
 # License
 
 TBD
