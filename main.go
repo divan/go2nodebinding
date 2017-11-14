@@ -11,6 +11,11 @@ import (
 )
 
 func main() {
+	if len(os.Args) != 2 {
+		fmt.Fprintf(os.Stderr, "Usage: %s file.go\n", os.Args[0])
+		os.Exit(1)
+	}
+
 	fd, err := os.Open(os.Args[1])
 	if err != nil {
 		log.Fatal(err)
@@ -37,6 +42,10 @@ func main() {
 		}
 		return true
 	})
+
+	if len(funcs) == 0 {
+		log.Fatal("CGO exported functions not found. Nothing to generate.")
+	}
 
 	out, err := GenerateOutput(funcs)
 	if err != nil {
