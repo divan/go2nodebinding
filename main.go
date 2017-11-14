@@ -23,7 +23,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Inspect the AST and print all identifiers and literals.
+	// Inspect the AST and find all exported funcs
+	var funcs []*Func
 	ast.Inspect(f, func(node ast.Node) bool {
 		if f, ok := node.(*ast.FuncDecl); ok {
 			fn, ok := parseExportedFunc(f)
@@ -32,11 +33,16 @@ func main() {
 			}
 
 			// do something with fn
-			fmt.Println(fn)
+			funcs = append(funcs, fn)
 		}
 		return true
 	})
 
+	out, err := GenerateOutput(funcs)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(out)
 }
 
 // parseExportedFunc parses FuncDecl into our own Func with small subset
