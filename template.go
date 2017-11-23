@@ -68,7 +68,8 @@ void _{{.Name}}(const FunctionCallbackInfo<Value>& args) {
 	}{{end}}
 
 	{{range $index, $arg := .Params}}{{if eq .Type "*C.char"}}
-	char *arg{{$index}} = *String::Utf8Value(args[{{$index}}]->ToString());{{end}} {{if eq .Type "C.int"}}
+	String::Utf8Value arg{{$index}}Obj(args[{{$index}}]->ToString());
+	char *arg{{$index}} = *arg{{$index}}Obj;{{end}}{{if eq .Type "C.int"}}
 	int arg{{$index}} = args[{{$index}}]->Int32Value();{{end}}{{end}}
 
 	// Call exported Go function, which returns a C string
