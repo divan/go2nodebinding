@@ -11,10 +11,11 @@ var headerTemplate = template.Must(template.New("header").Parse(`// DO NOT EDIT:
 
 #include <node.h>
 
-#include "../status-go/build/bin/libstatus-darwin-10.6-amd64.h"
+#include "../bin/libstatus.h"
 
 namespace status {
 
+using v8::Exception;
 using v8::FunctionCallbackInfo;
 using v8::Isolate;
 using v8::Local;
@@ -22,7 +23,6 @@ using v8::Object;
 using v8::String;
 using v8::Number;
 using v8::Value;
-using v8::Exception;
 
 `))
 
@@ -68,10 +68,8 @@ void _{{.Name}}(const FunctionCallbackInfo<Value>& args) {
 	}{{end}}
 
 	{{range $index, $arg := .Params}}{{if eq .Type "*C.char"}}
-	char *arg{{$index}} = new char();
-	memset(arg{{$index}}, 0, 1024);
-	args[{{$index}}]->ToString()->WriteUtf8(arg{{$index}});{{end}} {{if eq .Type "C.int"}}
-	double arg{{$index}} = args[{{$index}}]->NumberValue();{{end}}{{end}}
+	char *arg{{$index}} = *String::Utf8Value(args[{{$index}}]->ToString());{{end}} {{if eq .Type "C.int"}}
+	int arg{{$index}} = args[{{$index}}]->Int32Value();{{end}}{{end}}
 
 	// Call exported Go function, which returns a C string
 	{{if eq .ReturnsCount 1}}char *c = {{end}}{{.Name}}({{range $index, $arg := .Params}}{{if $index}}, {{end}}arg{{$index}}{{end}});
@@ -80,7 +78,8 @@ void _{{.Name}}(const FunctionCallbackInfo<Value>& args) {
 	args.GetReturnValue().Set(ret);
 	delete c;{{end}}
 
-	{{range $index, $arg := .Params}}{{if eq .Type "*C.char"}}delete arg{{$index}};{{end}}{{end}}
+	{{range $index, $arg := .Params}}{{if eq .Type "*C.char"}}delete arg{{$index}};
+	{{end}}{{end}}
 }
 `))
 
